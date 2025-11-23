@@ -1,0 +1,11 @@
+db\ConnectionTest.class
+view\ReceiptView.class
+view\LoginView.class
+view\CashierView.class
+controller\LoginController.class
+controller\TransactionController.class
+model\Transactions.class
+model\Item.class
+MainApplication.class
+db\DatabaseConnector.class
+model\SalesCalculator.class
