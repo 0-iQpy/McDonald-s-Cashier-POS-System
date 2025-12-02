@@ -30,14 +30,14 @@ public class MySQLDAO implements IDataAccessObject {
     // ----------------------------------------------------
     // 1. LOGIN
     // ----------------------------------------------------
-    @Override
-    public Cashier getCashierByName(String name) throws SQLException {
+    public Cashier authenticateCashier(String name, String password) throws SQLException {
         // Query to check if the cashier exists for login
-        String sql = "SELECT cashier_id, name FROM Cashiers WHERE name = ?";
+        String sql = "SELECT cashier_id, name FROM Cashiers WHERE name = ? AND password = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
             pstmt.setString(1, name);
+            pstmt.setString(2, password);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     // Encapsulation: Return a populated Cashier model
