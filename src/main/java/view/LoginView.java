@@ -2,16 +2,18 @@ package main.java.view;
 
 import main.java.db.MySQLDAO;
 import main.java.model.Cashier;
+import main.java.model.Item;
 import main.java.db.IDataAccessObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class LoginView extends AbstractView {
     private final IDataAccessObject dao = new MySQLDAO();
     private JTextField cashierNameField;
-    private JButton loginButton;   
     private JPasswordField passwordField;
+    private JButton loginButton;
 
     public LoginView() {
         super("McDonald's POS - Login", 400, 220);
@@ -19,9 +21,9 @@ public class LoginView extends AbstractView {
     }
 
     @Override
-    protected void initComponents(){
-        cashierNameField = new JTextField(20);
-        passwordField = new JPasswordField(20);
+    protected void initComponents() {
+        cashierNameField = new JTextField(15);
+        passwordField = new JPasswordField(15);
         loginButton = new JButton("Login");
     }
 
@@ -59,7 +61,6 @@ public class LoginView extends AbstractView {
         // Button
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(loginButton);
-
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         add(mainPanel);
@@ -70,7 +71,7 @@ public class LoginView extends AbstractView {
         loginButton.addActionListener(e -> attemptLogin());
         passwordField.addActionListener(e -> attemptLogin()); // Allow login on Enter key
     }
-    
+
     private void attemptLogin() {
         String username = cashierNameField.getText().trim();
         String password = new String(passwordField.getPassword());
@@ -83,9 +84,16 @@ public class LoginView extends AbstractView {
         try {
             Cashier cashier = dao.authenticateCashier(username, password);
             if (cashier != null) {
+                // Load menu items before showing the cashier view
+                List<Item> menuItems = dao.loadMenuItems();
+                if (menuItems.isEmpty()) {
+                    displayError("Menu items could not be loaded. Please check the database.", "Menu Error");
+                    return;
+                }
+
                 JOptionPane.showMessageDialog(this, "Login successful!", "Welcome", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
-                new CashierView(this, cashier).setVisible(true);
+                new CashierView(this, cashier, menuItems, dao).setVisible(true);
             } else {
                 displayError("Invalid username or password.", "Login Failed");
             }
