@@ -13,14 +13,14 @@ import java.util.List;
 import java.util.Map;
 
 public class MySQLDAO implements IDataAccessObject {
-    
+
     // --- Database Configuration (Update These) ---
     private static final String URL = "jdbc:mysql://localhost:3306/pos_db";
     private static final String USER = "root"; // <-- CHANGE THIS
     private static final String PASSWORD = "YOUR_PASSWORD_HERE"; // <-- CHANGE THIS
 
     /**
-     * Helper method to establish a connection.
+     * Helper method to establish a a connection.
      */
     private Connection getConnection() throws SQLException {
         // Uses core Java JDBC library
@@ -35,13 +35,13 @@ public class MySQLDAO implements IDataAccessObject {
         String sql = "SELECT cashier_id, name FROM Cashiers WHERE name = ? AND password = ?";
         try (Connection conn = getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
+
             pstmt.setString(1, name);
             pstmt.setString(2, password);
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     // Encapsulation: Return a populated Cashier model
-                    return new Cashier(rs.getInt("cashier_id"), rs.getString("name")); 
+                    return new Cashier(rs.getInt("cashier_id"), rs.getString("name"));
                 }
             }
         }
@@ -56,11 +56,11 @@ public class MySQLDAO implements IDataAccessObject {
         // Loads menu items and their fixed prices
         List<Item> items = new ArrayList<>();
         String sql = "SELECT item_id, name, display_name, price_with_vat FROM Items ORDER BY item_id";
-        
+
         try (Connection conn = getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
-            
+
             while (rs.next()) {
                 // Using getDouble() as requested for simpler data type
                 items.add(new Item(
@@ -110,18 +110,18 @@ public class MySQLDAO implements IDataAccessObject {
                     }
                 }
             }
-            
+
             // STEP 2: Insert Transaction Details (Batch Insertion)
             try (PreparedStatement pstmtDetail = conn.prepareStatement(insertDetailSql)) {
-                
+
                 for (Map.Entry<Item, Integer> entry : orderItems.entrySet()) {
                     Item item = entry.getKey();
                     int quantity = entry.getValue();
-                    
+
                     pstmtDetail.setInt(1, transactionId);
                     pstmtDetail.setInt(2, item.getId());
                     pstmtDetail.setInt(3, quantity);
-                    pstmtDetail.setDouble(4, item.getPriceWithVat()); 
+                    pstmtDetail.setDouble(4, item.getPriceWithVat());
                     pstmtDetail.addBatch();
                 }
                 pstmtDetail.executeBatch();
@@ -158,11 +158,11 @@ public class MySQLDAO implements IDataAccessObject {
         Map<String, Double> summaryMetrics = new HashMap<>();
 
         try (Connection conn = getConnection()) {
-            
+
             // 1. Get high-level summary (Total Orders, Total Earnings)
             String summarySql = "SELECT COUNT(transaction_id) AS TotalOrders, SUM(grand_total) AS TotalEarnings " +
                                 "FROM Transactions WHERE cashier_id = ?";
-            
+
             try (PreparedStatement pstmt = conn.prepareStatement(summarySql)) {
                 pstmt.setInt(1, cashierId);
                 try (ResultSet rs = pstmt.executeQuery()) {
@@ -177,24 +177,24 @@ public class MySQLDAO implements IDataAccessObject {
             String breakdownSql = "SELECT SUM(td.quantity) AS TotalItemsPurchased FROM Transaction_Details td " +
                                   "JOIN Transactions t ON td.transaction_id = t.transaction_id " +
                                   "WHERE t.cashier_id = ?";
-                                  
+
             try (PreparedStatement pstmt = conn.prepareStatement(breakdownSql)) {
                 pstmt.setInt(1, cashierId);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
                         // Store total items purchased
-                        summaryMetrics.put("TotalItemsPurchased", rs.getDouble("TotalItemsPurchased")); 
+                        summaryMetrics.put("TotalItemsPurchased", rs.getDouble("TotalItemsPurchased"));
                     }
                 }
             }
-            
+
             // 3. Get detailed item breakdown (Optional but highly recommended)
             String itemBreakdownSql = "SELECT i.name, SUM(td.quantity) AS total_quantity " +
                                       "FROM Transaction_Details td " +
                                       "JOIN Transactions t ON td.transaction_id = t.transaction_id " +
                                       "JOIN Items i ON td.item_id = i.item_id " +
-                                      "WHERE t.cashier_id = ? GROUP BY i.name ORDER BY i.item_id";
-                                      
+                                      "WHERE t.cashier_id = ? GROUP BY i.item_id, i.name ORDER BY i.item_id";
+
             try (PreparedStatement pstmt = conn.prepareStatement(itemBreakdownSql)) {
                 pstmt.setInt(1, cashierId);
                 try (ResultSet rs = pstmt.executeQuery()) {
