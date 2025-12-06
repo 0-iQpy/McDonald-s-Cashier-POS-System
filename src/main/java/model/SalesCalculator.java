@@ -38,6 +38,6 @@ public class SalesCalculator implements ICalculator{
 
     @Override
     public TransactionModel getTransactionSummary() {
-        return new TransactionModel(subtotalBase, vatAmount, discountAmount, grandTotal, isDiscounted);
+        return new TransactionModel(subtotalBase, vatAmount, discountAmount, grandTotal);
     }
 }

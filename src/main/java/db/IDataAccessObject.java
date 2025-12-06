@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface IDataAccessObject {
-    Cashier getCashierByName(String name) throws Exception;
+    Cashier authenticateCashier(String name, String password) throws Exception;
 
     List<Item> loadMenuItems() throws Exception;
 
