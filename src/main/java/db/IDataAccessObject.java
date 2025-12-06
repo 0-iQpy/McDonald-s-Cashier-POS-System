@@ -15,4 +15,8 @@ public interface IDataAccessObject {
     int saveTransaction(Cashier cashier, Map<Item, Integer> orderItems, TransactionModel summary) throws Exception;
 
     Map<String, Double> getSalesSummary(int cashierId) throws Exception;
+
+    List<Map<String, Object>> getAllTransactions() throws Exception;
+
+    void deleteTransaction(int transactionId) throws Exception;
 }

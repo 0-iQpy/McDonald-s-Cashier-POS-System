@@ -16,14 +16,20 @@ public class MySQLDAO implements IDataAccessObject {
 
     // --- Database Configuration (Update These) ---
     private static final String URL = "jdbc:mysql://localhost:3306/pos_db";
-    private static final String USER = "root"; // <-- CHANGE THIS
-    private static final String PASSWORD = "YOUR_PASSWORD_HERE"; // <-- CHANGE THIS
+    private static final String USER = "root"; // <-- CHANGE THIS if using different username
+    private static final String PASSWORD = "Macman021!"; //<-- SET YOUR MYSQL PASSWORD HERE (leave empty if no password)
 
     /**
-     * Helper method to establish a a connection.
+     * Helper method to establish a connection.
      */
     private Connection getConnection() throws SQLException {
-        // Uses core Java JDBC library
+        // Uses core Java JDBC library with MySQL Connector/J driver
+        // Make sure mysql-connector-java is in your pom.xml dependencies
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException ex) {
+            throw new SQLException("MySQL JDBC Driver not found. Ensure mysql-connector-java is in pom.xml", ex);
+        }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
@@ -209,5 +215,77 @@ public class MySQLDAO implements IDataAccessObject {
 
         }
         return summaryMetrics;
+    }
+
+    // ----------------------------------------------------
+    // 5. GET ALL TRANSACTIONS (FOR ADMIN VIEW)
+    // ----------------------------------------------------
+    @Override
+    public List<Map<String, Object>> getAllTransactions() throws SQLException {
+        List<Map<String, Object>> transactions = new ArrayList<>();
+        String sql = "SELECT transaction_id, cashier_id, transaction_date, subtotal_base, vat_amount, discount_amount, grand_total FROM Transactions ORDER BY transaction_date DESC";
+
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Map<String, Object> transaction = new HashMap<>();
+                transaction.put("transaction_id", rs.getInt("transaction_id"));
+                transaction.put("cashier_id", rs.getInt("cashier_id"));
+                transaction.put("transaction_date", rs.getTimestamp("transaction_date"));
+                transaction.put("subtotal_base", rs.getDouble("subtotal_base"));
+                transaction.put("vat_amount", rs.getDouble("vat_amount"));
+                transaction.put("discount_amount", rs.getDouble("discount_amount"));
+                transaction.put("grand_total", rs.getDouble("grand_total"));
+                transactions.add(transaction);
+            }
+        }
+        return transactions;
+    }
+
+    // ----------------------------------------------------
+    // 6. DELETE TRANSACTION (FOR ADMIN)
+    // ----------------------------------------------------
+    @Override
+    public void deleteTransaction(int transactionId) throws SQLException {
+        Connection conn = null;
+
+        try {
+            conn = getConnection();
+            conn.setAutoCommit(false);
+
+            // First delete transaction details
+            String deleteDetailsSql = "DELETE FROM Transaction_Details WHERE transaction_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(deleteDetailsSql)) {
+                pstmt.setInt(1, transactionId);
+                pstmt.executeUpdate();
+            }
+
+            // Then delete transaction
+            String deleteTransactionSql = "DELETE FROM Transactions WHERE transaction_id = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(deleteTransactionSql)) {
+                pstmt.setInt(1, transactionId);
+                pstmt.executeUpdate();
+            }
+
+            conn.commit();
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    throw new SQLException("Rollback failed: " + ex.getMessage());
+                }
+            }
+            throw new SQLException("Failed to delete transaction: " + e.getMessage());
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) { /* Ignore */ }
+            }
+        }
     }
 }

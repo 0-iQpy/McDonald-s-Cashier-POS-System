@@ -25,35 +25,26 @@ public class OrderController {
     }
 
     private void attachListeners() {
-        view.getGenerateReceiptButton().addActionListener(e -> processOrder());
+        view.getPreviewReceiptButton().addActionListener(e -> previewOrder());
+        view.getCompleteOrderButton().addActionListener(e -> completeOrder());
     }
 
-    private void processOrder() {
+    private void previewOrder() {
         // 1. Get order details from the view
-        List<Item> menuItems = view.getMenuItems();
-        List<JTextField> quantityFields = view.getQuantityFields();
-        boolean isDiscounted = view.isSeniorPwdDiscountSelected();
+        Map<Item, Integer> itemQuantities = view.getItemQuantities();
+        boolean isDiscounted = view.isDiscountApplied();
         String paymentText = view.getPaymentAmount().trim();
 
         // 2. Validate inputs
         Map<Item, Integer> orderedItems = new HashMap<>();
-        for (int i = 0; i < menuItems.size(); i++) {
-            try {
-                int quantity = Integer.parseInt(quantityFields.get(i).getText().trim());
-                if (quantity > 0) {
-                    orderedItems.put(menuItems.get(i), quantity);
-                } else if (quantity < 0) {
-                    JOptionPane.showMessageDialog(view, "Quantity cannot be negative.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(view, "Invalid quantity entered.", "Input Error", JOptionPane.ERROR_MESSAGE);
-                return;
+        for (Map.Entry<Item, Integer> entry : itemQuantities.entrySet()) {
+            if (entry.getValue() > 0) {
+                orderedItems.put(entry.getKey(), entry.getValue());
             }
         }
 
         if (orderedItems.isEmpty()) {
-            JOptionPane.showMessageDialog(view, "No items were ordered.", "Order Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(view, "No items were ordered. Please select at least one item.", "Order Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -61,11 +52,11 @@ public class OrderController {
         try {
             paymentAmount = Double.parseDouble(paymentText);
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(view, "Invalid payment amount.", "Input Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(view, "Invalid payment amount. Please enter a valid number.", "Input Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // 3. Calculate total based on user-provided logic
+        // 3. Calculate total
         double totalWithVat = 0;
         for (Map.Entry<Item, Integer> entry : orderedItems.entrySet()) {
             Item item = entry.getKey();
@@ -73,9 +64,9 @@ public class OrderController {
             totalWithVat += item.getPriceWithVat() * quantity;
         }
 
-        // Calculate subtotal (base price) by subtracting the VAT from the total price
-        double totalVatAmount = totalWithVat * VAT_RATE;
-        double subtotal = totalWithVat - totalVatAmount;
+        // Calculate subtotal (base price) by dividing the total by VAT factor (1.12)
+        double subtotal = totalWithVat / (1 + VAT_RATE);
+        double totalVatAmount = totalWithVat - subtotal;
 
         double finalVatAmount;
         double discountAmount;
@@ -94,28 +85,18 @@ public class OrderController {
         }
 
         if (paymentAmount < total) {
-            JOptionPane.showMessageDialog(view, "Payment is not enough.", "Payment Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(view, "Payment is not enough. Required: ₱" + String.format("%.2f", total), "Payment Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // 4. Save transaction
+        // 4. Show receipt preview
         Cashier cashier = view.getCashier();
         TransactionModel transactionModel = new TransactionModel(subtotal, finalVatAmount, discountAmount, total);
-        try {
-            dao.saveTransaction(cashier, orderedItems, transactionModel);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(view, "Error saving transaction: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        new ReceiptView(cashier, orderedItems, transactionModel, paymentAmount, dao).setVisible(true);
+    }
 
-        // 5. Generate receipt
-        new ReceiptView(cashier, orderedItems, transactionModel, paymentAmount).setVisible(true);
-
-        // 6. Reset UI
-        for (JTextField quantityField : view.getQuantityFields()) {
-            quantityField.setText("0");
-        }
-        view.getPaymentField().setText("");
-        view.getSeniorPwdDiscountCheckBox().setSelected(false);
+    private void completeOrder() {
+        // This is now handled directly in ReceiptView's Complete Order button
+        // The ReceiptView directly saves to the database and resets the CashierView
     }
 }
