@@ -1,12 +1,20 @@
-C:\Users\Reymond\OOPFinalProject\src\main\java\controller\LoginController.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\controller\TransactionController.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\db\ConnectionTest.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\db\DatabaseConnector.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\MainApplication.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\model\Item.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\model\SalesCalculator.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\model\Transactions.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\view\CashierView.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\view\LoginView.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\view\MainFrame.java
-C:\Users\Reymond\OOPFinalProject\src\main\java\view\ReceiptView.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\controller\OrderController.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\MainApplication.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\view\AbstractView.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\db\DatabaseConnector.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\view\AdminView.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\model\SalesCalculator.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\model\TransactionModel.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\controller\TransactionController.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\model\Cashier.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\model\Item.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\controller\LoginController.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\view\CashierView.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\view\SalesSummaryView.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\view\ReceiptView.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\model\ICalculator.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\db\ConnectionTest.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\db\MySQLDAO.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\view\AdminAuthDialog.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\view\LoginView.java
+C:\Users\Reymond Navasero\New folder\McDonald-s-Cashier-POS-System\src\main\java\db\IDataAccessObject.java
